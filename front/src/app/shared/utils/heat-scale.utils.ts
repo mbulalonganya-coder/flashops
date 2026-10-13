@@ -1,0 +1,45 @@
+/** Pale yellow → brand yellow → orange (légendes / échelles secondaires). */
+const HEAT_STOPS: [number, number, number][] = [
+  [255, 243, 176],
+  [255, 213, 0],
+  [249, 115, 22],
+];
+
+export type HeatMetric = 'value' | 'volume';
+
+export function heatColor(intensity: number): string {
+  const x = Math.min(1, Math.max(0, intensity));
+  const seg = x < 0.5 ? 0 : 1;
+  const local = x < 0.5 ? x * 2 : (x - 0.5) * 2;
+  const a = HEAT_STOPS[seg];
+  const b = HEAT_STOPS[seg + 1];
+  const r = Math.round(a[0] + (b[0] - a[0]) * local);
+  const g = Math.round(a[1] + (b[1] - a[1]) * local);
+  const bl = Math.round(a[2] + (b[2] - a[2]) * local);
+  return `rgb(${r}, ${g}, ${bl})`;
+}
+
+export function heatStrokeColor(intensity: number): string {
+  return intensity >= 0.55 ? '#9a3412' : '#1a1a1a';
+}
+
+function lerpHeat(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
+/** Carte agences + heatmap : rouge vif → vert vif (pas bordeaux / sang). */
+export function mapHeatColor(intensity: number): string {
+  const x = Math.min(1, Math.max(0, intensity));
+  const hue = Math.round(lerpHeat(0, 120, x));
+  const sat = Math.round(lerpHeat(88, 82, x));
+  const light = Math.round(lerpHeat(56, 46, x));
+  return `hsl(${hue}, ${sat}%, ${light}%)`;
+}
+
+export function mapHeatStrokeColor(intensity: number): string {
+  const x = Math.min(1, Math.max(0, intensity));
+  const hue = Math.round(lerpHeat(0, 120, x));
+  const sat = Math.round(lerpHeat(75, 70, x));
+  const light = Math.round(lerpHeat(38, 30, x));
+  return `hsl(${hue}, ${sat}%, ${light}%)`;
+}

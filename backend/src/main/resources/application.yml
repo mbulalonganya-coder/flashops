@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: flash-ops-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/flash_ops}
+    username: ${SPRING_DATASOURCE_USERNAME:flash_ops}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: public
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+flashops:
+  jwt:
+    secret: ${FLASHOPS_JWT_SECRET:change-me-use-long-random-secret-in-dev}
+    access-ttl-minutes: 60
+    refresh-ttl-hours: 168
+  cors:
+    allowed-origins: http://localhost:4200,http://localhost:4201,http://127.0.0.1:4200,http://127.0.0.1:4201
+  admin:
+    email: admin@flashops.local
+    password: ${FLASHOPS_ADMIN_PASSWORD:Admin@2030}
+    full-name: Administrateur Flash OPS

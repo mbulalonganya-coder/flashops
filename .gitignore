@@ -1,0 +1,10 @@
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+front/node_modules/
+front/dist/
+front/.angular/
+*.log
+.env
+backend/.env
+backend/application-local.yml
+.tools/

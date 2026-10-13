@@ -1,0 +1,10 @@
+# Copier vers application-local.yml (gitignored) ou définir les variables d'environnement.
+spring:
+  datasource:
+    url: jdbc:postgresql://HOST:5432/flash_ops
+    username: flash_ops
+    password: YOUR_DB_PASSWORD
+
+flashops:
+  jwt:
+    secret: YOUR_LONG_JWT_SECRET
