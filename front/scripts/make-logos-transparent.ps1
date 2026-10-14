@@ -63,5 +63,5 @@ function Set-TransparentBackground {
   Write-Host "Updated $Path"
 }
 
-Set-TransparentBackground 'c:\projets\flash_ops\front\public\branding\logo-light.png'
-Set-TransparentBackground 'c:\projets\flash_ops\front\public\branding\logo-dark.png'
+Set-TransparentBackground 'c:\projets\flash_ops\front\public\branding\logo-light1.png'
+Set-TransparentBackground 'c:\projets\flash_ops\front\public\branding\logo-dark1.png'

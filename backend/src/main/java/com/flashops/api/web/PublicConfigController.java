@@ -17,9 +17,9 @@ public class PublicConfigController {
             "app_name", "Flash OPS",
             "app_short_name", "Flash",
             "app_url", "http://localhost:4200",
-            "logo_light", "/branding/logo-light.png",
-            "logo_dark", "/branding/logo-dark.png",
-            "favicon", "/branding/logo-light.png",
+            "logo_light", "/branding/logo-light1.png",
+            "logo_dark", "/branding/logo-dark1.png",
+            "favicon", "/branding/logo-light1.png",
             "default_language", "fr"));
   }
 }
