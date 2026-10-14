@@ -19,11 +19,11 @@ function initApp(
   resume: AppResumeService
 ) {
   return async () => {
+    theme.set(theme.mode());
     loading.show('Initialisation…');
     try {
       await runtime.load();
       await settings.load();
-      theme.set(theme.mode());
       await auth.initSession();
       resume.init();
     } finally {

@@ -2,14 +2,59 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
+  <script>
+    (function () {
+      var key = 'flashops-theme';
+      var stored = localStorage.getItem(key);
+      var dark =
+        stored === 'dark' ||
+        (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
+    })();
+  </script>
   <title>Flash OPS</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..700;1,14..32,400..700&display=swap"
+    rel="stylesheet"
+  >
   <link rel="icon" type="image/png" href="branding/logo-light1.png">
+  <style>
+    @keyframes flash-brand-pulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.93); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+    #app-splash img {
+      animation: flash-brand-pulse 2.4s cubic-bezier(0.45, 0.05, 0.25, 1) infinite;
+      will-change: opacity, transform;
+    }
+    html[data-bs-theme='dark'] .brand-logo--light {
+      display: none !important;
+    }
+    html:not([data-bs-theme='dark']) .brand-logo--dark {
+      display: none !important;
+    }
+  </style>
 </head>
 <body>
   <div id="app-splash" class="app-splash" aria-hidden="true">
-    <img src="branding/logo-light1.png" width="96" height="96" alt="" />
+    <img
+      class="flash-brand-pulse brand-logo--light"
+      src="branding/logo-light1.png"
+      width="120"
+      height="120"
+      alt=""
+    />
+    <img
+      class="flash-brand-pulse brand-logo--dark"
+      src="branding/logo-dark1.png"
+      width="120"
+      height="120"
+      alt=""
+    />
   </div>
   <app-root></app-root>
 </body>

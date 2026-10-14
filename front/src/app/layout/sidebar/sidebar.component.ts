@@ -81,14 +81,6 @@ const STORAGE_KEY = 'flashops_sidebar_groups_open';
     </aside>
   `,
   styles: `
-    .sidebar-brand-logo {
-      width: 2.25rem;
-      height: 2.25rem;
-      flex: 0 0 2.25rem;
-      object-fit: contain;
-      border-radius: 0.4rem;
-    }
-
     .sidebar-group-toggle {
       display: flex;
       align-items: center;
@@ -145,7 +137,6 @@ export class SidebarComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  /** Open groups keyed by label. */
   private readonly openGroups = signal<Record<string, boolean>>({});
 
   readonly appName = computed(() => this.appSettings.settings().app_name);
@@ -162,9 +153,43 @@ export class SidebarComponent implements OnInit {
       label: 'Flash OPS',
       items: [{ label: 'Accueil', path: '/', icon: 'bi bi-house', permission: 'dashboard.voir' }],
     },
+    {
+      label: 'Paramétrages',
+      items: [
+        {
+          label: 'Utilisateurs',
+          path: '/parametrages/utilisateurs',
+          icon: 'bi bi-people',
+          permission: 'auth.utilisateurs.lire',
+        },
+        {
+          label: 'Rôles',
+          path: '/parametrages/roles',
+          icon: 'bi bi-shield',
+          permission: 'auth.roles.lire',
+        },
+        {
+          label: 'Permissions',
+          path: '/parametrages/permissions',
+          icon: 'bi bi-key',
+          permission: 'auth.permissions.lire',
+        },
+        {
+          label: 'Réglages système',
+          path: '/parametrages/systeme',
+          icon: 'bi bi-gear',
+          permission: 'auth.parametres.lire',
+        },
+        {
+          label: 'Actions utilisateur',
+          path: '/parametrages/actions',
+          icon: 'bi bi-journal-text',
+          permission: 'audit.actions.lire',
+        },
+      ],
+    },
   ];
 
-  /** Hide groups where the user has no visible item. */
   readonly visibleGroups = computed(() =>
     this.navGroups
       .map((g) => ({
@@ -185,7 +210,7 @@ export class SidebarComponent implements OnInit {
   isGroupOpen(label: string): boolean {
     const state = this.openGroups();
     if (label in state) return state[label];
-    return true; // default open for unknown/new groups
+    return true;
   }
 
   toggleGroup(label: string): void {
@@ -221,7 +246,6 @@ export class SidebarComponent implements OnInit {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
-        // Default: all open
         return Object.fromEntries(this.navGroups.map((g) => [g.label, true]));
       }
       const parsed = JSON.parse(raw) as Record<string, boolean>;

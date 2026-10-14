@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: flash-ops-api
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+      resolve-lazily: true
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/flash_ops}
     username: ${SPRING_DATASOURCE_USERNAME:flash_ops}
@@ -21,7 +26,7 @@ spring:
 
 flashops:
   jwt:
-    secret: ${FLASHOPS_JWT_SECRET:change-me-use-long-random-secret-in-dev}
+    secret: ${FLASHOPS_JWT_SECRET:flashops-local-dev-jwt-secret-change-in-prod-32chars}
     access-ttl-minutes: 60
     refresh-ttl-hours: 168
   cors:
@@ -30,3 +35,5 @@ flashops:
     email: admin@flashops.local
     password: ${FLASHOPS_ADMIN_PASSWORD:Admin@2030}
     full-name: Administrateur Flash OPS
+  storage:
+    avatars-dir: ${FLASHOPS_AVATARS_DIR:./data/avatars}

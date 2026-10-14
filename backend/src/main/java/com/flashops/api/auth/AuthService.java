@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -33,6 +34,7 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final FlashOpsProperties props;
+  private final ProfilePhotoStorage profilePhotoStorage;
   private final SecureRandom random = new SecureRandom();
 
   public AuthService(
@@ -41,13 +43,15 @@ public class AuthService {
       PermissionRepository permissions,
       PasswordEncoder passwordEncoder,
       JwtService jwtService,
-      FlashOpsProperties props) {
+      FlashOpsProperties props,
+      ProfilePhotoStorage profilePhotoStorage) {
     this.utilisateurs = utilisateurs;
     this.jetons = jetons;
     this.permissions = permissions;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
     this.props = props;
+    this.profilePhotoStorage = profilePhotoStorage;
   }
 
   @Transactional
@@ -85,6 +89,99 @@ public class AuthService {
     return issueTokens(u);
   }
 
+  @Transactional
+  public void changePassword(int userId, String currentPassword, String newPassword) {
+    if (newPassword == null || newPassword.length() < 8) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "password too short");
+    }
+    Utilisateur u =
+        utilisateurs
+            .findWithRoleById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "user not found"));
+    if (!u.isActif()) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "inactive user");
+    }
+    if (!passwordEncoder.matches(currentPassword, u.getMotDePasseHash())) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid current password");
+    }
+    u.setMotDePasseHash(passwordEncoder.encode(newPassword));
+    u.setVersionSession(u.getVersionSession() + 1L);
+    utilisateurs.save(u);
+    jetons.revokeAllActiveByUtilisateurId(userId, Instant.now());
+  }
+
+  @Transactional
+  public UserView updateProfile(int userId, String email, String fullName) {
+    String nextEmail = email == null ? "" : email.trim().toLowerCase();
+    String nextName = fullName == null ? "" : fullName.trim();
+    if (nextEmail.isBlank() || !nextEmail.contains("@")) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid email");
+    }
+    if (nextName.isBlank()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid full name");
+    }
+    Utilisateur u =
+        utilisateurs
+            .findWithRoleById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "user not found"));
+    if (!u.isActif()) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "inactive user");
+    }
+    var existing = utilisateurs.findByCourrielIgnoreCase(nextEmail);
+    if (existing.isPresent() && !existing.get().getId().equals(u.getId())) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "email already used");
+    }
+    u.setCourriel(nextEmail);
+    u.setNomComplet(nextName);
+    utilisateurs.save(u);
+    return toUserView(u);
+  }
+
+  @Transactional
+  public UserView uploadProfilePhoto(int userId, MultipartFile file) {
+    Utilisateur u =
+        utilisateurs
+            .findWithRoleById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "user not found"));
+    if (!u.isActif()) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "inactive user");
+    }
+    String previous = u.getPhotoFichier();
+    ProfilePhotoStorage.StoredPhoto stored = profilePhotoStorage.store(userId, file);
+    if (previous != null && !previous.isBlank() && !previous.equals(stored.filename())) {
+      profilePhotoStorage.deleteIfExists(previous);
+    }
+    u.setPhotoFichier(stored.filename());
+    u.setPhotoModifieLe(stored.updatedAt());
+    utilisateurs.save(u);
+    return toUserView(u);
+  }
+
+  @Transactional
+  public UserView deleteProfilePhoto(int userId) {
+    Utilisateur u =
+        utilisateurs
+            .findWithRoleById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "user not found"));
+    profilePhotoStorage.deleteIfExists(u.getPhotoFichier());
+    u.setPhotoFichier(null);
+    u.setPhotoModifieLe(null);
+    utilisateurs.save(u);
+    return toUserView(u);
+  }
+
+  @Transactional(readOnly = true)
+  public byte[] readProfilePhoto(int requesterId, int targetUserId) {
+    if (requesterId != targetUserId) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "forbidden");
+    }
+    Utilisateur u =
+        utilisateurs
+            .findById(targetUserId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+    return profilePhotoStorage.read(u.getPhotoFichier());
+  }
+
   @Transactional(readOnly = true)
   public UserView me(int userId) {
     Utilisateur u =
@@ -95,7 +192,9 @@ public class AuthService {
   }
 
   private TokenPair issueTokens(Utilisateur u) {
-    String access = jwtService.createAccessToken(u.getId(), u.getCourriel(), u.getRole().getCode());
+    String access =
+        jwtService.createAccessToken(
+            u.getId(), u.getCourriel(), u.getRole().getCode(), u.getVersionSession());
     String refreshRaw = randomToken();
     JetonActualisation j = new JetonActualisation();
     j.setUtilisateur(u);
@@ -109,10 +208,17 @@ public class AuthService {
     List<Permission> perms = permissions.findByRoleId(u.getRole().getId());
     List<PermissionView> permViews =
         perms.stream()
-            .map(p -> new PermissionView(p.getId(), p.getCode(), p.getLibelle()))
+            .map(
+                p ->
+                    new PermissionView(
+                        p.getId(),
+                        p.getCode(),
+                        p.getLibelle(),
+                        p.getModule() == null ? "general" : p.getModule()))
             .toList();
     List<String> codes = perms.stream().map(Permission::getCode).toList();
     RoleView role = new RoleView(u.getRole().getId(), u.getRole().getCode(), u.getRole().getLibelle());
+    boolean hasPhoto = u.getPhotoFichier() != null && !u.getPhotoFichier().isBlank();
     return new UserView(
         u.getId(),
         u.getCourriel(),
@@ -120,7 +226,10 @@ public class AuthService {
         role,
         permViews,
         codes,
-        u.getDerniereConnexionLe());
+        u.isActif(),
+        u.getDerniereConnexionLe(),
+        hasPhoto,
+        u.getPhotoModifieLe());
   }
 
   private static String randomToken() {

@@ -5,7 +5,6 @@ import { environment } from '../../../environments/environment';
 
 interface RuntimeConfig {
   apiUrl?: string;
-  /** Google Maps JavaScript API key (optional — falls back to OpenStreetMap). */
   googleMapsApiKey?: string;
 }
 

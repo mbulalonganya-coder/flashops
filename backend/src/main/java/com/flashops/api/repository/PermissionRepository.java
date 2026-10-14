@@ -18,4 +18,6 @@ public interface PermissionRepository extends JpaRepository<Permission, Integer>
           """,
       nativeQuery = true)
   List<Permission> findByRoleId(@Param("roleId") Short roleId);
+
+  List<Permission> findAllByOrderByModuleAscCodeAsc();
 }

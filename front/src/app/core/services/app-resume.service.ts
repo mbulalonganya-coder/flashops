@@ -2,15 +2,12 @@ import { DestroyRef, Injectable, inject } from '@angular/core';
 import { AppLoadingService } from './app-loading.service';
 import { AuthService } from './auth.service';
 
-/** Affiche le loader après une longue inactivité (onglet masqué) au retour sur l’app. */
 @Injectable({ providedIn: 'root' })
 export class AppResumeService {
   private readonly loading = inject(AppLoadingService);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
   private hiddenAt: number | null = null;
-
-  /** Durée minimale d’inactivité (onglet caché) avant loader au retour. */
   private readonly idleMs = 45_000;
 
   init(): void {

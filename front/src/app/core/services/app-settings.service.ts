@@ -14,6 +14,7 @@ const defaults: PublicAppSettings = {
   logo_dark: BRANDING.logoDark,
   favicon: BRANDING.favicon,
   default_language: 'fr',
+  timezone: 'Africa/Kinshasa',
 };
 
 function pickUrl(value: string | undefined, fallback: string): string {
@@ -31,6 +32,7 @@ function mergePublicSettings(partial: Partial<PublicAppSettings>): PublicAppSett
     app_name: partial.app_name?.trim() || defaults.app_name,
     app_short_name: partial.app_short_name?.trim() || defaults.app_short_name,
     default_language: partial.default_language?.trim() || defaults.default_language,
+    timezone: partial.timezone?.trim() || defaults.timezone,
   };
 }
 

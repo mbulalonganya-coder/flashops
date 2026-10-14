@@ -1,6 +1,7 @@
 package com.flashops.api.security;
 
 import com.flashops.api.auth.JwtService;
+import com.flashops.api.repository.UtilisateurRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,9 +18,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
+  private final UtilisateurRepository utilisateurs;
 
-  public JwtAuthFilter(JwtService jwtService) {
+  public JwtAuthFilter(JwtService jwtService, UtilisateurRepository utilisateurs) {
     this.jwtService = jwtService;
+    this.utilisateurs = utilisateurs;
   }
 
   @Override
@@ -32,8 +35,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       try {
         Claims claims = jwtService.parse(token);
         int userId = jwtService.userIdFromClaims(claims);
-        var auth = new UsernamePasswordAuthenticationToken(userId, null, java.util.List.of());
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        long tokenSessionVersion = jwtService.sessionVersionFromClaims(claims);
+        var userOpt = utilisateurs.findById(userId);
+        if (userOpt.isEmpty() || !userOpt.get().isActif()) {
+          SecurityContextHolder.clearContext();
+        } else if (userOpt.get().getVersionSession() != tokenSessionVersion) {
+          SecurityContextHolder.clearContext();
+        } else {
+          var auth = new UsernamePasswordAuthenticationToken(userId, null, java.util.List.of());
+          SecurityContextHolder.getContext().setAuthentication(auth);
+        }
       } catch (Exception ignored) {
         SecurityContextHolder.clearContext();
       }

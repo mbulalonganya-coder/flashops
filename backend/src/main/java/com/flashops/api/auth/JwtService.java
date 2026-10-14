@@ -22,13 +22,14 @@ public class JwtService {
     this.accessTtlMinutes = props.jwt().accessTtlMinutes();
   }
 
-  public String createAccessToken(int userId, String email, String roleCode) {
+  public String createAccessToken(int userId, String email, String roleCode, long sessionVersion) {
     Instant now = Instant.now();
     Instant exp = now.plusSeconds(accessTtlMinutes * 60L);
     return Jwts.builder()
         .subject(String.valueOf(userId))
         .claim("email", email)
         .claim("role", roleCode)
+        .claim("session_version", sessionVersion)
         .issuedAt(Date.from(now))
         .expiration(Date.from(exp))
         .signWith(key)
@@ -41,5 +42,16 @@ public class JwtService {
 
   public int userIdFromClaims(Claims claims) {
     return Integer.parseInt(claims.getSubject());
+  }
+
+  public long sessionVersionFromClaims(Claims claims) {
+    Object raw = claims.get("session_version");
+    if (raw == null) {
+      return 0L;
+    }
+    if (raw instanceof Number number) {
+      return number.longValue();
+    }
+    return Long.parseLong(String.valueOf(raw));
   }
 }

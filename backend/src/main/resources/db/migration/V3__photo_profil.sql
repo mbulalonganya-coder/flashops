@@ -1,0 +1,5 @@
+ALTER TABLE utilisateurs
+    ADD COLUMN IF NOT EXISTS photo_fichier VARCHAR(120) NULL;
+
+ALTER TABLE utilisateurs
+    ADD COLUMN IF NOT EXISTS photo_modifie_le TIMESTAMPTZ NULL;

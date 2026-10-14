@@ -23,6 +23,8 @@ export interface User {
   zone_id?: number | null;
   last_login_at?: string;
   created_at?: string;
+  has_profile_photo?: boolean;
+  profile_photo_updated_at?: string | null;
 }
 
 export interface AdminRole extends Role {
@@ -37,9 +39,11 @@ export interface PublicAppSettings {
   logo_dark: string;
   favicon: string;
   default_language: string;
+  timezone?: string;
 }
 
 export interface AppSettings extends PublicAppSettings {
+  timezone: string;
   smtp_host: string;
   smtp_port: number;
   smtp_username: string;
@@ -122,6 +126,28 @@ export interface AdminUserInput {
   permission_ids?: number[];
   region_id?: number | null;
   zone_id?: number | null;
+}
+
+export interface UserActionSummary {
+  id: number;
+  action_code: string;
+  module: string;
+  label: string;
+  user: { id: number; email: string; full_name: string } | null;
+  created_at: string;
+}
+
+export interface UserActionDetail extends UserActionSummary {
+  details: Record<string, unknown> | null;
+  ip_address: string | null;
+  user_agent: string | null;
+}
+
+export interface PagedUserActions {
+  items: UserActionSummary[];
+  total: number;
+  page: number;
+  page_size: number;
 }
 
 export interface AuthTokens {

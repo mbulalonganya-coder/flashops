@@ -22,7 +22,7 @@ import { CommonModule } from '@angular/common';
           </div>
         </header>
       }
-      <div class="section-card-body" [class.p-0]="noPadding">
+      <div class="section-card-body" [class.p-0]="noPadding" [class.parametrages-table-body]="noPadding">
         <ng-content />
       </div>
     </section>
@@ -32,6 +32,5 @@ export class SectionCardComponent {
   @Input() title = '';
   @Input() subtitle = '';
   @Input() noPadding = false;
-  /** Place actions under the title instead of beside it (better for narrow cards). */
   @Input() stackedHeader = false;
 }

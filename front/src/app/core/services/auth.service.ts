@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom, tap } from 'rxjs';
 import { AuthTokens, LoginResponse, User } from '../models/api.models';
@@ -48,11 +48,15 @@ export class AuthService {
   }
 
   async initSession(): Promise<void> {
-    if (!this.accessToken) return;
+    if (!this.accessToken && !this.refreshToken) return;
     this.loadingSignal.set(true);
     try {
+      if (!this.accessToken) {
+        await this.tryRefresh();
+        return;
+      }
       const res = await firstValueFrom(
-        this.http.get<{ user: User }>(`${this.baseUrl}/auth/me`)
+        this.http.get<{ user: User }>(`${this.baseUrl}/auth/me`, this.authOptions())
       );
       this.userSignal.set(res.user);
     } catch {
@@ -60,6 +64,22 @@ export class AuthService {
     } finally {
       this.loadingSignal.set(false);
     }
+  }
+
+  /** Garantit un jeton d'accès valide (ping /me ou refresh). */
+  async ensureAccessForWrite(): Promise<boolean> {
+    if (!this.accessToken && !this.refreshToken) return false;
+    try {
+      if (this.accessToken) {
+        await firstValueFrom(
+          this.http.get<{ user: User }>(`${this.baseUrl}/auth/me`, this.authOptions())
+        );
+        return true;
+      }
+    } catch {
+      /* refresh ci-dessous */
+    }
+    return !!(await this.tryRefresh());
   }
 
   login(email: string, password: string) {
@@ -72,6 +92,88 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.baseUrl}/auth/login/token`, { token }).pipe(
       tap((res) => this.persistSession(res))
     );
+  }
+
+  changePassword(currentPassword: string, newPassword: string) {
+    return this.http.post<{
+      message: string;
+      logout_required?: boolean;
+      sessions_revoked?: boolean;
+    }>(
+      `${this.baseUrl}/auth/password`,
+      {
+        current_password: currentPassword,
+        new_password: newPassword,
+      },
+      this.authOptions()
+    );
+  }
+
+  async uploadProfilePhotoAfterSessionCheck(file: Blob): Promise<{ user: User }> {
+    const ready = await this.ensureAccessForWrite();
+    if (!ready) {
+      throw new Error('missing access token');
+    }
+
+    const url = `${this.baseUrl}/auth/profile-photo`;
+    const attempt = async (token: string): Promise<Response> => {
+      const form = new FormData();
+      form.append('file', file, 'profile.jpg');
+      return fetch(url, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+        credentials: 'same-origin',
+      });
+    };
+
+    let token = this.accessToken;
+    if (!token) {
+      throw new Error('missing access token');
+    }
+
+    let response = await attempt(token);
+    if (response.status === 401 || response.status === 403) {
+      const refreshed = await this.tryRefresh();
+      if (!refreshed) {
+        throw new Error('missing access token');
+      }
+      token = refreshed;
+      response = await attempt(token);
+    }
+
+    if (!response.ok) {
+      let payload: { error?: string } = {};
+      try {
+        payload = await response.json();
+      } catch {
+        payload = {};
+      }
+      throw { status: response.status, error: payload };
+    }
+
+    const data = (await response.json()) as { user: User };
+    this.userSignal.set(data.user);
+    return data;
+  }
+
+  deleteProfilePhoto() {
+    return this.http
+      .delete<{ user: User }>(`${this.baseUrl}/auth/profile-photo`, this.authOptions())
+      .pipe(tap((res) => this.userSignal.set(res.user)));
+  }
+
+  updateProfile(email: string, fullName: string) {
+    return this.http
+      .patch<{ user: User }>(
+        `${this.baseUrl}/auth/profile`,
+        {
+          email,
+          full_name: fullName,
+        },
+        this.authOptions()
+      )
+      .pipe(tap((res) => this.userSignal.set(res.user)));
   }
 
   logout(): void {
@@ -101,7 +203,7 @@ export class AuthService {
           localStorage.setItem(REFRESH_KEY, tokenRes.tokens.refresh_token);
         }
         const meRes = await firstValueFrom(
-          this.http.get<{ user: User }>(`${this.baseUrl}/auth/me`)
+          this.http.get<{ user: User }>(`${this.baseUrl}/auth/me`, this.authOptions())
         );
         this.userSignal.set(meRes.user);
         return tokenRes.tokens.access_token;
@@ -120,5 +222,17 @@ export class AuthService {
     localStorage.setItem(ACCESS_KEY, res.tokens.access_token);
     localStorage.setItem(REFRESH_KEY, res.tokens.refresh_token);
     this.userSignal.set(res.user);
+  }
+
+  private authOptions(): { headers: HttpHeaders } {
+    const token = this.accessToken;
+    if (!token) {
+      throw new Error('missing access token');
+    }
+    return {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${token}`,
+      }),
+    };
   }
 }

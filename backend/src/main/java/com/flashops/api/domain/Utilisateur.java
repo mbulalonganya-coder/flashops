@@ -38,6 +38,15 @@ public class Utilisateur {
   @Column(name = "derniere_connexion_le")
   private Instant derniereConnexionLe;
 
+  @Column(name = "version_session", nullable = false)
+  private long versionSession;
+
+  @Column(name = "photo_fichier", length = 120)
+  private String photoFichier;
+
+  @Column(name = "photo_modifie_le")
+  private Instant photoModifieLe;
+
   public Integer getId() {
     return id;
   }
@@ -88,5 +97,29 @@ public class Utilisateur {
 
   public void setDerniereConnexionLe(Instant derniereConnexionLe) {
     this.derniereConnexionLe = derniereConnexionLe;
+  }
+
+  public long getVersionSession() {
+    return versionSession;
+  }
+
+  public void setVersionSession(long versionSession) {
+    this.versionSession = versionSession;
+  }
+
+  public String getPhotoFichier() {
+    return photoFichier;
+  }
+
+  public void setPhotoFichier(String photoFichier) {
+    this.photoFichier = photoFichier;
+  }
+
+  public Instant getPhotoModifieLe() {
+    return photoModifieLe;
+  }
+
+  public void setPhotoModifieLe(Instant photoModifieLe) {
+    this.photoModifieLe = photoModifieLe;
   }
 }

@@ -6,11 +6,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record FlashOpsProperties(
     Jwt jwt,
     Cors cors,
-    Admin admin) {
+    Admin admin,
+    Storage storage) {
 
   public record Jwt(String secret, int accessTtlMinutes, int refreshTtlHours) {}
 
   public record Cors(String allowedOrigins) {}
 
   public record Admin(String email, String password, String fullName) {}
+
+  public record Storage(String avatarsDir) {}
 }

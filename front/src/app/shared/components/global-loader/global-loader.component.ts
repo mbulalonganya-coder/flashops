@@ -1,7 +1,5 @@
-import { Component, ElementRef, ViewChild, effect, inject } from '@angular/core';
-import type { AnimationItem } from 'lottie-web';
+import { Component, inject } from '@angular/core';
 import { AppLoadingService } from '../../../core/services/app-loading.service';
-import { BRANDING } from '../../../core/constants/branding';
 
 @Component({
   selector: 'app-global-loader',
@@ -9,7 +7,20 @@ import { BRANDING } from '../../../core/constants/branding';
   template: `
     @if (loading.visible()) {
       <div class="global-loader" role="status" aria-live="polite" aria-busy="true">
-        <div #lottieHost class="global-loader__lottie"></div>
+        <img
+          class="global-loader__logo flash-brand-pulse brand-logo--light"
+          src="branding/logo-light1.png"
+          width="120"
+          height="120"
+          alt=""
+        />
+        <img
+          class="global-loader__logo flash-brand-pulse brand-logo--dark"
+          src="branding/logo-dark1.png"
+          width="120"
+          height="120"
+          alt=""
+        />
         <p class="global-loader__text">{{ loading.message() }}</p>
       </div>
     }
@@ -28,54 +39,20 @@ import { BRANDING } from '../../../core/constants/branding';
       color: var(--text-muted, #6b7280);
     }
 
-    .global-loader__lottie {
-      width: min(220px, 55vw);
-      height: min(220px, 55vw);
+    .global-loader__logo {
+      width: var(--logo-splash, 7.5rem);
+      height: var(--logo-splash, 7.5rem);
+      object-fit: contain;
     }
 
     .global-loader__text {
       margin: 0;
-      font-size: 0.9375rem;
+      font-size: var(--font-size-body, 1.0625rem);
       font-weight: 500;
+      letter-spacing: var(--letter-spacing-body, -0.022em);
     }
   `,
 })
 export class GlobalLoaderComponent {
   readonly loading = inject(AppLoadingService);
-
-  @ViewChild('lottieHost') private lottieHost?: ElementRef<HTMLDivElement>;
-
-  private animation: AnimationItem | null = null;
-
-  constructor() {
-    effect(() => {
-      if (this.loading.visible()) {
-        setTimeout(() => void this.ensureAnimation(), 0);
-      } else {
-        this.destroyAnimation();
-      }
-    });
-  }
-
-  private async ensureAnimation(): Promise<void> {
-    if (!this.lottieHost?.nativeElement || this.animation) {
-      return;
-    }
-    const host = this.lottieHost.nativeElement;
-    host.innerHTML = '';
-    const lottie = await import('lottie-web');
-    this.animation = lottie.default.loadAnimation({
-      container: host,
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-      path: BRANDING.loaderLottie,
-    });
-  }
-
-  private destroyAnimation(): void {
-    this.animation?.destroy();
-    this.animation = null;
-    this.lottieHost?.nativeElement?.replaceChildren();
-  }
 }

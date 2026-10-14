@@ -12,9 +12,11 @@ import {
   ScheduledReportInput,
   ReportRecipient,
   DocumentShareInput,
+  PagedUserActions,
   ReportShareInput,
   ReportShareResult,
   User,
+  UserActionDetail,
 } from '../models/api.models';
 import { RuntimeConfigService } from './runtime-config.service';
 
@@ -115,6 +117,16 @@ export class AdminService {
 
   deleteAccessToken(id: number) {
     return this.http.delete<{ status: string }>(`${this.baseUrl}/access-tokens/${id}`);
+  }
+
+  listActions(page = 0, pageSize = 25) {
+    return this.http.get<{ data: PagedUserActions }>(`${this.baseUrl}/actions`, {
+      params: { page: String(page), page_size: String(pageSize) },
+    });
+  }
+
+  getAction(id: number) {
+    return this.http.get<{ data: UserActionDetail }>(`${this.baseUrl}/actions/${id}`);
   }
 
   shareDocument(input: DocumentShareInput) {

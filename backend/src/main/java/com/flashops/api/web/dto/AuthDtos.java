@@ -10,6 +10,13 @@ public final class AuthDtos {
 
   public record LoginRequest(String email, String password) {}
 
+  public record ChangePasswordRequest(
+      @JsonProperty("current_password") String currentPassword,
+      @JsonProperty("new_password") String newPassword) {}
+
+  public record UpdateProfileRequest(
+      String email, @JsonProperty("full_name") String fullName) {}
+
   public record RefreshRequest(@JsonProperty("refresh_token") String refreshToken) {}
 
   public record TokenPair(
@@ -24,7 +31,7 @@ public final class AuthDtos {
 
   public record RoleView(Short id, String code, String label) {}
 
-  public record PermissionView(Integer id, String code, String label) {}
+  public record PermissionView(Integer id, String code, String label, String module) {}
 
   public record UserView(
       Integer id,
@@ -33,5 +40,8 @@ public final class AuthDtos {
       RoleView role,
       List<PermissionView> permissions,
       @JsonProperty("permission_codes") List<String> permissionCodes,
-      @JsonProperty("last_login_at") Instant lastLoginAt) {}
+      @JsonProperty("is_active") boolean isActive,
+      @JsonProperty("last_login_at") Instant lastLoginAt,
+      @JsonProperty("has_profile_photo") boolean hasProfilePhoto,
+      @JsonProperty("profile_photo_updated_at") Instant profilePhotoUpdatedAt) {}
 }

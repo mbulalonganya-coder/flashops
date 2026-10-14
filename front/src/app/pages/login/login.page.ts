@@ -29,11 +29,11 @@ type LoginMode = 'password' | 'token';
 
         @if (autoConnecting()) {
           <div class="text-center py-4">
-            <span class="spinner-border text-primary mb-3" role="status"></span>
+            <span class="spinner-border login-spinner mb-3" role="status"></span>
             <p class="text-muted mb-0">Connexion en cours…</p>
           </div>
         } @else {
-        <div class="login-mode nav nav-pills nav-fill mb-3">
+        <div class="login-mode nav nav-pills nav-fill mb-3" role="tablist">
           <button
             type="button"
             class="nav-link"
@@ -114,11 +114,6 @@ type LoginMode = 'password' | 'token';
     </div>
   `,
   styles: `
-    .login-logo {
-      width: 4rem;
-      height: 4rem;
-      object-fit: contain;
-    }
     .login-mode .nav-link {
       font-size: 0.875rem;
     }

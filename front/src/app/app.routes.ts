@@ -17,6 +17,45 @@ export const routes: Routes = [
         path: '',
         loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePageComponent),
       },
+      {
+        path: 'profil',
+        loadComponent: () => import('./pages/profile/profile.page').then((m) => m.ProfilePageComponent),
+      },
+      {
+        path: 'parametrages',
+        loadComponent: () =>
+          import('./pages/parametrages/parametrages-layout.page').then((m) => m.ParametragesLayoutPageComponent),
+        children: [
+          { path: '', redirectTo: 'utilisateurs', pathMatch: 'full' },
+          {
+            path: 'utilisateurs',
+            loadComponent: () =>
+              import('./pages/parametrages/parametrages-users.page').then((m) => m.ParametragesUsersPageComponent),
+          },
+          {
+            path: 'roles',
+            loadComponent: () =>
+              import('./pages/parametrages/parametrages-roles.page').then((m) => m.ParametragesRolesPageComponent),
+          },
+          {
+            path: 'permissions',
+            loadComponent: () =>
+              import('./pages/parametrages/parametrages-permissions.page').then(
+                (m) => m.ParametragesPermissionsPageComponent
+              ),
+          },
+          {
+            path: 'systeme',
+            loadComponent: () =>
+              import('./pages/parametrages/parametrages-system.page').then((m) => m.ParametragesSystemPageComponent),
+          },
+          {
+            path: 'actions',
+            loadComponent: () =>
+              import('./pages/parametrages/parametrages-actions.page').then((m) => m.ParametragesActionsPageComponent),
+          },
+        ],
+      },
     ],
   },
   { path: '**', redirectTo: '' },

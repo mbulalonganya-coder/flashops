@@ -21,6 +21,9 @@ public class Permission {
   @Column(nullable = false, length = 200)
   private String libelle;
 
+  @Column(length = 50)
+  private String module;
+
   public Integer getId() {
     return id;
   }
@@ -31,5 +34,9 @@ public class Permission {
 
   public String getLibelle() {
     return libelle;
+  }
+
+  public String getModule() {
+    return module;
   }
 }
