@@ -46,6 +46,26 @@ body {
   height: 100%;
 }
 
+.app-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--flash-gray-100, #f1f3f5);
+}
+
+.app-splash img {
+  width: 5.5rem;
+  height: 5.5rem;
+  object-fit: contain;
+}
+
+[data-bs-theme='dark'] .app-splash {
+  background: #141414;
+}
+
 body {
   margin: 0;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
