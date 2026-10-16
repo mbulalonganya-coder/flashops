@@ -54,6 +54,8 @@
   --text-muted: #9ca3af;
   --sidebar-bg: #1a1a1a;
   --header-bg: #1a1a1a;
+  --bs-table-hover-bg: #2a2a2a;
+  --bs-table-hover-color: #f3f4f6;
 }
 
 * {
@@ -1313,6 +1315,23 @@ fieldset:disabled .btn-primary {
   font-weight: 600;
 }
 
+[data-bs-theme='dark'] .nav-pills .nav-link.active {
+  background: rgba(255, 213, 0, 0.15);
+  color: var(--flash-yellow);
+  border-color: rgba(255, 213, 0, 0.45);
+}
+
+[data-bs-theme='dark'] .login-mode .nav-link:hover:not(.active) {
+  color: var(--text-primary);
+  background: #2a2a2a;
+}
+
+[data-bs-theme='dark'] .login-mode .nav-link.active {
+  background: rgba(255, 213, 0, 0.15);
+  color: var(--flash-yellow);
+  border-color: rgba(255, 213, 0, 0.45);
+}
+
 /* Forms */
 .form-control,
 .form-select {
@@ -1696,6 +1715,46 @@ fieldset:disabled .btn-primary {
   .parametrages-detail-dl dd {
     font-size: 0.875rem;
     margin-bottom: 0.65rem;
+  }
+}
+
+[data-bs-theme='dark'] .parametrages-shell {
+  .parametrages-subnav-bar .nav-link:hover,
+  .parametrages-inner-nav .nav-link:hover {
+    color: var(--text-primary);
+    background: #2a2a2a;
+  }
+
+  .parametrages-subnav-bar .nav-link.active,
+  .parametrages-inner-nav .nav-link.active,
+  .nav-pills .nav-link.active {
+    background: rgba(255, 213, 0, 0.15);
+    color: var(--flash-yellow);
+    border-color: rgba(255, 213, 0, 0.45);
+  }
+
+  .parametrages-role-item:hover {
+    background: #2a2a2a;
+  }
+
+  .parametrages-role-item.is-selected {
+    background: rgba(255, 213, 0, 0.15);
+    color: var(--flash-yellow);
+  }
+
+  .parametrages-role-item.is-selected small {
+    color: var(--text-muted);
+  }
+
+  .parametrages-role-item.is-selected .badge {
+    background: rgba(255, 213, 0, 0.18) !important;
+    color: var(--flash-yellow);
+  }
+
+  .form-check-input:checked {
+    background-color: rgba(255, 213, 0, 0.15);
+    border-color: rgba(255, 213, 0, 0.55);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23ffd500' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3 6-6'/%3e%3c/svg%3e");
   }
 }
 
